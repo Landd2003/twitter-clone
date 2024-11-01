@@ -21,22 +21,22 @@ export const signup = async (req, res) => {
             return res.status(400).json({ error: "Email is already taken" });
         }
 
-        if (password < 6) {
-            return res.status(400).json({ error: "Password must be at least 6 characters long" })
+        if (password.length < 6) {
+            return res.status(400).json({ error: "Password must be at least 6 characters long" });
         }
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const newUser = await User({
+        const newUser = new User({
             fullName,
             username,
             email,
-            password: hashedPassword
-        })
+            password: hashedPassword,
+        });
 
         if (newUser) {
-            generateTokenAndSetCookie(newUser._id, res)
+            generateTokenAndSetCookie(newUser._id, res);
             await newUser.save();
 
             res.status(201).json({
@@ -47,23 +47,22 @@ export const signup = async (req, res) => {
                 followers: newUser.followers,
                 following: newUser.following,
                 profileImg: newUser.profileImg,
-                coveringImg: newUser.coverImg,
-            })
+                coverImg: newUser.coverImg,
+            });
         } else {
-            res.status(400).json({ error: "Invalid user data" })
+            res.status(400).json({ error: "Invalid user data" });
         }
     } catch (error) {
         console.log("Error in signup controller", error.message);
-        res.status(500).json({ error: "Iternal Server Error" });
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body;
-
         const user = await User.findOne({ username });
-        const isPasswordCorrect = await bcrypt.compare(password, user?.password || "")
+        const isPasswordCorrect = await bcrypt.compare(password, user?.password || "");
 
         if (!user || !isPasswordCorrect) {
             return res.status(400).json({ error: "Invalid username or password" });
@@ -80,20 +79,20 @@ export const login = async (req, res) => {
             following: user.following,
             profileImg: user.profileImg,
             coverImg: user.coverImg,
-        })
+        });
     } catch (error) {
-        console.log("Error in signup controller", error.message);
-        res.status(500).json({ error: "Iternal Server Error" });
+        console.log("Error in login controller", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
 export const logout = async (req, res) => {
     try {
-        res.cookie("jwt", "", { maxAge: 0 })
+        res.cookie("jwt", "", { maxAge: 0 });
         res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
         console.log("Error in logout controller", error.message);
-        res.status(500).json({ error: "Iternal Server Error" })
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
@@ -105,4 +104,4 @@ export const getMe = async (req, res) => {
         console.log("Error in getMe controller", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
-}
+};
