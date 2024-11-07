@@ -41,7 +41,6 @@ const LoginPage = () => {
             }
         },
         onSuccess: () => {
-
             queryClient.invalidateQueries({ queryKey: ["authUser"] });
         },
     });
